@@ -1,5 +1,6 @@
-import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { readFileSync } from 'fs';
+import { JWT } from 'google-auth-library';
+import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { resolve } from 'path';
 
 type Config = {
@@ -11,32 +12,32 @@ export class GoogleSheetService {
   private readonly document: GoogleSpreadsheet;
 
   constructor(sheetId: string) {
-    this.document = new GoogleSpreadsheet(sheetId);
+    const config: Config = JSON.parse(readFileSync(resolve('credentials.json'), 'utf-8'));
+    const serviceAccountAuth = new JWT({
+      email: config.client_email,
+      key: config.private_key,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    this.document = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
   }
 
   async load() {
-    const config: Config = JSON.parse(readFileSync(resolve('credentials.json'), 'utf-8'));
-
-    await this.document.useServiceAccountAuth({ ...config });
     await this.document.loadInfo();
   }
 
   async addSheet(title: string, headers: string[]) {
-    if (this.document.sheetsByTitle[title]) {
-      return;
+    if (!this.document.sheetsByTitle[title]) {
+      return await this.document.addSheet({
+        title,
+        headerValues: headers,
+      });
     }
-    return this.document.addSheet({
-      title,
-      headerValues: headers,
-    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  async addRows(name: string, headers: string[], data: {}[]) {
+  async addRows(name: string, headers: string[], data: Array<any[] | Record<string, any>>) {
     const sheet = await this.addSheet(name, headers);
-    if (!sheet) {
-      return;
+    if (sheet) {
+      return await sheet.addRows(data);
     }
-    return sheet.addRows(data);
   }
 }
