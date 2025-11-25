@@ -34,10 +34,11 @@ export const imageDataToObject = (data: string) => {
   const rows = data.split('\n').slice(2, data.includes('Calculation', 0) ? 122 : 63);
   return {
     headers,
-    data: rows.map((row) => {
-      return row.split(' ').reduce((obj, cur, i) => {
-        return { ...obj, [headers[i].trim()]: cur.trim() };
-      }, {});
-    }),
+    data: rows.map<Record<string, string>>((row) =>
+      row.split(' ').reduce<Record<string, string>>(
+        (obj, cur, i) => ({ ...obj, [headers[i].trim()]: cur.trim() }),
+        {},
+      ),
+    ),
   };
 };

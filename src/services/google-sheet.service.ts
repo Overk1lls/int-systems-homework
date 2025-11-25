@@ -34,7 +34,7 @@ export class GoogleSheetService {
     }
   }
 
-  async addRows(name: string, headers: string[], data: Array<any[] | Record<string, any>>) {
+  async addRows(name: string, headers: string[], data: Record<string, string>[]) {
     const sheet = await this.addSheet(name, headers);
     if (sheet) {
       return await sheet.addRows(data);
