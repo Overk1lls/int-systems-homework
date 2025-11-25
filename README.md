@@ -16,4 +16,4 @@ The example is https://docs.google.com/spreadsheets/d/1aXVyyX2gvcnUhoQEqrLUWyKYc
 
 ## Getting Started
 * `npm install`
-* `npm run start:dev` or `npm start`
+* `npm start`
